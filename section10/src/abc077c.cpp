@@ -10,7 +10,6 @@ int main() {
     for (int i = 0; i < n; ++i) std::cin >> c[i];
 
     sort(a.begin(), a.end());
-    sort(b.begin(), b.end());
     sort(c.begin(), c.end());
 
     long long ans = 0;
