@@ -1,0 +1,29 @@
+meta:
+  title: プログラミングの基本概念
+  thumbnail:
+  description:
+  sns:
+    - twitter
+slide:
+  loop: true
+  sidebar: true
+  targetBlank: true
+  showIndex: true
+  isVertical: false
+  code:
+    languages:
+      - yaml
+      - json
+      - markdown
+      - javascript
+      - css
+    plugins: []
+    theme: twilight
+  chart: true
+  math: true
+extends:
+  js:
+  css: ./style.css
+  webpack:
+build:
+  ssr: true
