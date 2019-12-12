@@ -1,5 +1,4 @@
 // #include <iostream>
-// #include <vector>
 
 #define InputIterator typename
 #define RandomAccessIterator typename
