@@ -29,36 +29,14 @@ $(function(){
 
   function mod(a, m) {
     // return 0 <= a mod m < m
-    return ((a % m) + m) % m;
+    return a.mod(m).add(m).mod(m);
   }
 
-  function randint(min, max) {
-    // return random value in [min, max)
-    return Math.floor(Math.random() * (max - min)) + min;
-  }
-
-  function pow(a, n, m) {
-    let ret = 1;
-    while (n) {
-      if (n & 1) ret = mod(ret * a, m);
-      a = mod(a * a, m);
-      n >>= 1;
-    }
-    return ret;
-  }
-
-  function gcd(a, b) {
-    if (b == 0) {
-      return a;
-    }
-    return gcd(b, mod(a, b));
-  }
-
-  function coprime(a, MIN_SIZE=3, N_TRIAL=100) {
+  function coprime(a, MIN_SIZE=2, N_TRIAL=100) {
     for (let i = 0; i < N_TRIAL; ++i) {
-      let n = randint(1<<MIN_SIZE, a);
-      if (gcd(a, n) == 1) {
-        console.log(`get coprime in ${i} times.`);
+      let n = bigInt.randBetween(1<<MIN_SIZE, a.subtract(1));
+      if (bigInt.gcd(a, n).equals(1)) {
+        //console.log(`get coprime in ${i} times.`);
         return n;
       }
     }
@@ -67,12 +45,12 @@ $(function(){
 
   function extended_gcd(a, b) {
     if (b == 0) {
-      return [1, 0];
+      return [bigInt(1), bigInt(0)];
     }
 
     let [x, y] = extended_gcd(b, mod(a, b));
 
-    return [y, x - Math.floor(a / b) * y];
+    return [y, x.subtract(a.divide(b).multiply(y))];
   }
 
 
@@ -81,40 +59,40 @@ $(function(){
   ////////////
 
   function miller_rabin_test(n, q, k, w) {
-    let x = pow(w, q, n);
-    if (x == 1 || x == n-1) {
+    let x = w.modPow(q, n);
+    if (x.equals(1) || x.equals(n.subtract(1))) {
       return true;
     }
 
+    //for (let i = 1; k.greater(i); ++i) {
     for (let i = 1; i < k; ++i) {
-      x = (x * x % n);
+      x = mod(x.multiply(x), n);
 
-      if (x == n-1) return true;
-      if (x == 1) return false;
+      if (x.equals(n.subtract(1))) return true;
+      if (x.equals(1)) return false;
     }
 
     return false;
   }
 
-  function is_prime(n, N_TEST=100) {
-    if (n == 2) {
-      return true;
-    }
-    if (n == 1 || n & 1 == 0) {
-      return false;
+  function is_prime(n, N_TEST=10) {
+    if (n.equals(2)) return true;
+    if (n.equals(1) || n.isEven()) return false;
+
+    let q = n.subtract(1);
+    let k = bigInt(0);
+
+    while (q.isEven()) {
+      q = q.shiftRight(1);
+      k = k.add(1);
     }
 
-    let q = n-1;
-    let k = 0;
-    while (q & 1 == 0) {
-      q >>= 1;
-      k += 1;
-    }
-
-    console.assert(n-1 === 2**k * q);
+    console.assert(
+      n.subtract(1).equals(
+        bigInt(1).shiftLeft(k).multiply(q)));
 
     for (let i = 0; i < N_TEST; ++i) {
-      w = randint(1, n);
+      w = bigInt.randBetween(1, n.subtract(1));
       if (!miller_rabin_test(n, q, k, w)) {
         return false;
       }
@@ -127,9 +105,10 @@ $(function(){
     // return prime in [min, max)
 
     for (let i = 0; i < N_TRIAL; ++i) {
-      n = randint(min, max);
+      //n = randint(min, max);
+      let n = bigInt.randBetween(min, max.subtract(1));
       if (is_prime(n)) {
-        console.log(`get prime in ${i} times`);
+        //console.log(`get prime in ${i} times`);
         return n;
       }
     }
@@ -142,76 +121,64 @@ $(function(){
   // RSA    //
   ////////////
 
-  function generate_keys(SECURE_KEY_SIZE=1000) {
-    let min = 1<<(SECURE_KEY_SIZE/2);
-    let max = 2 * min;
+  function generate_keys(SECURE_KEY_SIZE=1024) {
+    let min = bigInt(1).shiftLeft(SECURE_KEY_SIZE/2);
+    let max = min.multiply(2);
 
     let p = prime_in(min, max);
     let q = prime_in(min, max);
 
-    let n = p * q;
-
-    let L = (p-1) * (q-1);
-
+    let n = p.multiply(q);
+    let L = bigInt(p.subtract(1)).multiply(q.subtract(1));
     let pub = coprime(L);
-
     let [prv, _] = extended_gcd(pub, L);
     prv = mod(prv, L);
 
-    console.assert(mod(pub * prv, L) == 1);
+
+    console.assert(mod(pub.multiply(prv), L).equals(1));
 
     return [n, pub, prv];
   }
 
   function encrypt(plain_text, n, pub) {
-    return pow(plain_text, pub, n);
+    return plain_text.modPow(pub, n);
   }
 
   function decrypt(encrypted_text, n, prv) {
-    return pow(encrypted_text, prv, n);
+    return encrypted_text.modPow(prv, n);
   }
 
   function msg_to_int(message, CHAR_SIZE=8) {
-    let value = 0;
-    for (let i = message.length-1; i >= 0; --i) {
-      value <<= CHAR_SIZE;
-      value += message.charCodeAt(i);
+    let value = bigInt();
+    for (let i = 0; i < message.length; ++i) {
+      value = value.shiftLeft(CHAR_SIZE);
+      value = value.add(message.charCodeAt(i));
     }
     return value;
   }
 
   function int_to_msg(value, CHAR_SIZE=8) {
     let message = "";
-    while (value) {
-      message += String.fromCharCode(value % (1<<CHAR_SIZE));
-      value >>= CHAR_SIZE;
+    for (let v of value.toArray(1<<CHAR_SIZE)["value"]) {
+      message += String.fromCharCode(v);
     }
     return message;
   }
 
   $("#generate_keys").click(function() {
-    console.log("mod(8, 5):", mod(8, 5));
-    console.log("mod(-1, 5):", mod(-1, 5));
-    console.log("randint(0, 2):", randint(0, 2));
-    console.log("pow(4, 2, 7):", pow(4, 2, 7));
-    console.log("coprime(10):", coprime(10));
-    console.log("extended_gcd(7, 3):", extended_gcd(7, 3));
-    console.log("is_prime(7):", is_prime(7));
-    console.log("is_prime(10):", is_prime(10));
-    console.log("prime_in(10, 20):", prime_in(10, 20));
-    let [n, pub, prv] = generate_keys(SECURE_KEY_SIZE=20);
-    console.log([n, pub, prv]);
+    var start_ms = new Date().getTime();
 
-    let msg = "hi";
-    console.log(msg_to_int(msg));
-    console.log(int_to_msg(msg_to_int(msg)));
+    let [n, pub, prv] = generate_keys(SECURE_KEY_SIZE=8*128);
+
+    let msg = "fooo!";
 
     let E = encrypt(msg_to_int(msg), n, pub)
-    console.log("E:", E);
     console.log("encrypted message:", int_to_msg(E));
 
     let D = decrypt(E, n, prv)
-    console.log("D:", D);
     console.log("decrypted message:", int_to_msg(D));
+
+    var elapsed_ms = new Date().getTime() - start_ms;
+    console.log("elapsed time(ms):", elapsed_ms);
   });
 });
