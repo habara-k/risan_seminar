@@ -1,5 +1,5 @@
 $(function(){
-  const ws = new WebSocket('ws://localhost:5042/ws');
+  const ws = new WebSocket(`ws://${location.host}/ws`);
 
   function alertWithToast(message) {
     let toast = $(`
