@@ -3,22 +3,100 @@ $(function(){
 
   const id = Math.floor(Math.random()*1000)
   ws.onopen = function() {
-    ws.send(`Hello id${id}!`);
+    ws.send(JSON.stringify({
+      type: "normal",
+      id: id,
+      message: "Hello!",
+    }));
   };
 
   ws.onmessage = function (e) {
-    // メッセージのli要素作成
-    $("<li>", {
-      class: "list-group-item",
-      text: e.data,
-    }).appendTo('#chat');
+
+    let data = JSON.parse(e.data);
+
+    let tweet = $(`
+        <div class="input-group input-group-sm mb-3">
+          <div class="input-group-prepend">
+          <span class="input-group-text">ID${data["id"]}</span>
+        </div>`);
+
+    var body;
+
+    switch (data["type"]) {
+      case "normal":
+        body = $(`<input type="text" class="form-control" value="${data['message']}" readonly></input>`);
+        tweet.append(body);
+        break;
+
+      case "encrypted":
+        body = $(`
+            <textarea class="form-control" rows="2" readonly>${data["message"]}</textarea>
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button">
+              <i class="fas fa-file-import"></i>
+              </button>
+            </div>`)
+        body.find("button").click(function () {
+          if (data["dst"]==id) {
+            $("#encrypted_msg").val(data["encrypted"]);
+          }
+        });
+        tweet.append(body);
+        break;
+
+      case "key":
+        body = $(`
+            <textarea class="form-control" rows="2" readonly>${data["message"]}</textarea>
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-file-import"></i>
+              </button>
+            </div>`)
+        body.find("button").click(function() {
+          $("#dst_n").val(data["N"]);
+          $("#dst_pub").val(data["Pub"]);
+          $("#dst_id").val(data["id"]);
+        })
+        tweet.append(body);
+        break;
+    }
+    $("#chat").prepend(tweet);
+
   };
 
   // エンターキーが押された場合メッセージを送信
   $("#textbox").on("keypress", function (e) {
     if (e.keyCode == 13 && $(this).val()) {
-      ws.send($(this).val());
+      ws.send(JSON.stringify({
+        type: "normal",
+        id: id,
+        message: $(this).val(),
+      }));
       $(this).val("");
+    }
+  });
+
+  $("#save_and_tweet").click(function() {
+    if ($("#my_n").val()) {
+      ws.send(JSON.stringify({
+        type: "key",
+        id: id,
+        N: $("#my_n").val(),
+        Pub: $("#my_pub").val(),
+        message: `N: ${$("#my_n").val()}\n\nPub: ${$("#my_pub").val()}`
+      }));
+    }
+  });
+
+  $("#tweet_msg").click(function() {
+    if ($("#sending_msg").val()) {
+      ws.send(JSON.stringify({
+        type: "encrypted",
+        id: id,
+        dst: $("#dst_id").val(),
+        encrypted: $("#sending_msg").val(),
+        message: "@ID" + id + ": " + $("#sending_msg").val(),
+      }))
     }
   });
 
@@ -166,19 +244,27 @@ $(function(){
   }
 
   $("#generate_keys").click(function() {
-    var start_ms = new Date().getTime();
-
     let [n, pub, prv] = generate_keys(SECURE_KEY_SIZE=8*128);
-
-    let msg = "fooo!";
-
-    let E = encrypt(msg_to_int(msg), n, pub)
-    console.log("encrypted message:", int_to_msg(E));
-
-    let D = decrypt(E, n, prv)
-    console.log("decrypted message:", int_to_msg(D));
-
-    var elapsed_ms = new Date().getTime() - start_ms;
-    console.log("elapsed time(ms):", elapsed_ms);
+    $("#my_n").val(n.toString());
+    $("#my_pub").val(pub.toString());
+    $("#my_prv").val(prv.toString());
+    console.log($("#my_n").val());
   });
+
+  $("#encrypt").click(function() {
+    let msg = $("#plain_msg").val();
+    let n = bigInt($("#dst_n").val());
+    let pub = bigInt($("#dst_pub").val());
+    let encrypted_value = encrypt(msg_to_int(msg), n, pub);
+    $("#sending_msg").val(encrypted_value.toString());
+  });
+
+  $("#decrypt").click(function() {
+    let encrypted_msg = bigInt($("#encrypted_msg").val());
+    let n = bigInt($("#my_n").val());
+    let prv = bigInt($("#my_prv").val());
+    let decrypted_value = decrypt(encrypted_msg, n, prv);
+    $("#decrypted_msg").val(int_to_msg(decrypted_value));
+  });
+
 });

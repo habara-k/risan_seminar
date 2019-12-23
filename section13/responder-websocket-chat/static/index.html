@@ -2,84 +2,116 @@
   <head>
     <title>Hello</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://peterolson.github.io/BigInteger.js/BigInteger.min.js"></script>
+
     <script src="./static/index.js"></script>
   </head>
 
   <body>
-    <nav class="navbar navbar-light bg-light mb-3">
-      <a class="navbar-brand" href="#">RSA Chat</a>
-    </nav>
-
-
-    <div class="container">
-      <div class="row">
-        <div class="col-3">
-          <div class="input-group">
+    <div class="card-group position-relative">
+      <div class="card">
+        <div class="card-body overflow-auto" style="height:100vh">
+          <div class="input-group mb-3">
             <input id="textbox" type="text" class="form-control" placeholder="What's happening?">
           </div>
 
-          <hr>
-
-          <ul id="chat" class="list-group">
-          </ul>
-        </div>
-
-        <div class="col-3">
-
-          <button type="button" class="btn btn-primary mb-3" id="generate_keys">Generate Keys</button>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">N</span>
-            </div>
-            <input type="text" class="form-control" disabled="disabled">
-          </div>
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Pub</span>
-            </div>
-            <input type="text" class="form-control" disabled="disabled">
-          </div>
-
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Prv</span>
-            </div>
-            <input type="text" class="form-control" disabled="disabled">
-          </div>
-          <button type="button" class="btn btn-primary mt-3">Save and Tweet</button>
-        </div>
-
-        <div class="col-3">
-          <button type="button" class="btn btn-primary mb-3">Encrypt Message</button>
-          <div class="input-group mb-3">
-            <textarea class="form-control" placeholder="Sending Message"></textarea>
-          </div>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="N">
-          </div>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Pub">
-          </div>
-          <div class="input-group">
-            <textarea class="form-control" disabled="disabled" placeholder="Encrypted Message"></textarea>
-          </div>
-        </div>
-
-        <div class="col-3">
-          <button type="button" class="btn btn-primary mb-3">Decrypt Message</button>
-          <div class="input-group mb-3">
-            <textarea class="form-control" placeholder="Encrypted Message"></textarea>
-          </div>
-          <div class="input-group">
-            <textarea class="form-control" disabled="disabled" placeholder="Decrypted Message"></textarea>
+          <div id="chat">
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="card">
+        <div class="card-body" style="height:100vh; overflow:auto;">
+
+          <button id="generate_keys" type="button" class="btn btn-primary mb-3">Generate Keys</button>
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">N</span>
+            </div>
+            <textarea id="my_n" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Pub</span>
+            </div>
+            <textarea id="my_pub" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Prv</span>
+            </div>
+            <textarea id="my_prv" class="form-control" readonly></textarea>
+          </div>
+          <button id="save_and_tweet" type="button" class="btn btn-primary mt-3">Save and Tweet</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="height:100vh; overflow:auto;">
+          <button id="encrypt" type="button" class="btn btn-primary mb-3">Encrypt Message</button>
+          <div class="input-group input-group-sm mb-3">
+            <textarea id="plain_msg" class="form-control" placeholder="Sending Message"></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">@ ID</span>
+            </div>
+            <input type="text" id="dst_id" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">N</span>
+            </div>
+            <textarea id="dst_n" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Pub</span>
+            </div>
+            <textarea id="dst_pub" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Encrypted</span>
+            </div>
+            <textarea id="sending_msg" class="form-control" readonly></textarea>
+          </div>
+
+          <button id="tweet_msg" type="button" class="btn btn-primary mt-3">Tweet</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="height:100vh; overflow:auto;">
+          <button id="decrypt" type="button" class="btn btn-primary mb-3">Decrypt Message</button>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Encrypted</span>
+            </div>
+            <textarea id="encrypted_msg" class="form-control" readonly></textarea>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Decrypted</span>
+            </div>
+            <textarea id="decrypted_msg" class="form-control" readonly></textarea>
+          </div>
+
+        </div>
+      </div>
   </body>
 </html>

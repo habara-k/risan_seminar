@@ -17,7 +17,7 @@ def miller_rabin_test(n, q, k, w):
     return False
 
 
-def is_prime(n, N_TEST=100):
+def is_prime(n, N_TEST=10):
     # WORNING:
     #   return True incorrectly with probability (1/4)^N_TEST
 
@@ -34,8 +34,7 @@ def is_prime(n, N_TEST=100):
     assert(n-1 == 2**k * q)
 
     for _ in range(N_TEST):
-        # w = random.randint(1, n-1)
-        w = 6037829885071192688345921885744741717786686896648428839969496208035041112421633642732235009120961987508761216392470909428960284726809071348465621576383
+        w = random.randint(1, n-1)
         if not miller_rabin_test(n, q, k, w):
             return False
 
