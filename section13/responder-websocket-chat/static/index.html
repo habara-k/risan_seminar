@@ -1,20 +1,28 @@
 <html>
   <head>
-    <title>Hello</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+    <title>RSA Chat</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://peterolson.github.io/BigInteger.js/BigInteger.min.js"></script>
 
     <script src="./static/index.js"></script>
   </head>
 
   <body>
-    <div class="card-group position-relative">
+
+  <div id="toastbox" style="position: absolute; top: 0; right: 0; z-index:10;">
+  </div>
+
+    <div class="card-group">
       <div class="card">
         <div class="card-body overflow-auto" style="height:100vh">
           <div class="input-group mb-3">
@@ -27,6 +35,7 @@
       </div>
 
       <div class="card">
+
         <div class="card-body" style="height:100vh; overflow:auto;">
 
           <button id="generate_keys" type="button" class="btn btn-primary mb-3">Generate Keys</button>
@@ -34,23 +43,23 @@
             <div class="input-group-prepend">
               <span class="input-group-text">N</span>
             </div>
-            <textarea id="my_n" class="form-control" readonly></textarea>
+            <textarea id="my_n" class="form-control" rows="4" readonly></textarea>
           </div>
 
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">Pub</span>
             </div>
-            <textarea id="my_pub" class="form-control" readonly></textarea>
+            <textarea id="my_pub" class="form-control" rows="4" readonly></textarea>
           </div>
 
-          <div class="input-group input-group-sm">
+          <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">Prv</span>
             </div>
-            <textarea id="my_prv" class="form-control" readonly></textarea>
+            <textarea id="my_prv" class="form-control" rows="4" readonly></textarea>
           </div>
-          <button id="save_and_tweet" type="button" class="btn btn-primary mt-3">Save and Tweet</button>
+          <button id="save_and_tweet" type="button" class="btn btn-primary">Tweet Public Keys</button>
         </div>
       </div>
 
@@ -84,12 +93,12 @@
 
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
-              <span class="input-group-text">Encrypted</span>
+              <span class="input-group-text">Encrypted <br> Message</span>
             </div>
-            <textarea id="sending_msg" class="form-control" readonly></textarea>
+            <textarea id="sending_msg" class="form-control" rows="4" readonly></textarea>
           </div>
 
-          <button id="tweet_msg" type="button" class="btn btn-primary mt-3">Tweet</button>
+          <button id="tweet_msg" type="button" class="btn btn-primary">Tweet</button>
         </div>
       </div>
 
@@ -106,12 +115,15 @@
 
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
-              <span class="input-group-text">Decrypted</span>
+              <span class="input-group-text">Decrypted <br> Message</span>
             </div>
-            <textarea id="decrypted_msg" class="form-control" readonly></textarea>
+            <textarea id="decrypted_msg" class="form-control" rows="4" readonly></textarea>
           </div>
 
         </div>
       </div>
+    </div>
+
+
   </body>
 </html>

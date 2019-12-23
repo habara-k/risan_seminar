@@ -1,6 +1,23 @@
 $(function(){
   const ws = new WebSocket('ws://localhost:5042/ws');
 
+  function alertWithToast(message) {
+    let toast = $(`
+    <div class="toast" role="alert" data-delay="3000">
+      <div class="toast-header">
+        <strong class="mr-auto text-primary">RSA Chat</strong>
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">
+          <span >&times;</span>
+        </button>
+      </div>
+      <div class="toast-body">
+        ${message}
+      </div>
+    </div>`);
+    $("#toastbox").append(toast);
+    toast.toast('show');
+  }
+
   const id = Math.floor(Math.random()*1000)
   ws.onopen = function() {
     ws.send(JSON.stringify({
@@ -30,28 +47,33 @@ $(function(){
 
       case "encrypted":
         body = $(`
-            <textarea class="form-control" rows="2" readonly>${data["message"]}</textarea>
+            <textarea class="form-control" rows="4" readonly>${data["message"]}</textarea>
             <div class="input-group-append">
-              <button class="btn btn-outline-secondary" type="button">
+              <button class="btn btn-outline-secondary" type="button" data-toggle="tooltip" data-placement="bottom" title="Decrypt message">
               <i class="fas fa-file-import"></i>
               </button>
             </div>`)
+        body.find("button").tooltip('show');
+
         body.find("button").click(function () {
-          if (data["dst"]==id) {
-            $("#encrypted_msg").val(data["encrypted"]);
+          if (data["dst"]!=id) {
+            alertWithToast("This message is not for you.");
+            //return;
           }
+          $("#encrypted_msg").val(data["encrypted"]);
         });
         tweet.append(body);
         break;
 
       case "key":
         body = $(`
-            <textarea class="form-control" rows="2" readonly>${data["message"]}</textarea>
+            <textarea class="form-control" rows="4" readonly>${data["message"]}</textarea>
             <div class="input-group-append">
-              <button class="btn btn-outline-secondary" type="button">
+              <button class="btn btn-outline-secondary" type="button" data-toggle="tooltip" data-placement="bottom" title="Send message to ID${data["id"]}">
                 <i class="fas fa-file-import"></i>
               </button>
             </div>`)
+        body.find("button").tooltip('show');
         body.find("button").click(function() {
           $("#dst_n").val(data["N"]);
           $("#dst_pub").val(data["Pub"]);
@@ -77,27 +99,31 @@ $(function(){
   });
 
   $("#save_and_tweet").click(function() {
-    if ($("#my_n").val()) {
-      ws.send(JSON.stringify({
-        type: "key",
-        id: id,
-        N: $("#my_n").val(),
-        Pub: $("#my_pub").val(),
-        message: `N: ${$("#my_n").val()}\n\nPub: ${$("#my_pub").val()}`
-      }));
+    if ($("#my_n").val() == "") {
+      alertWithToast("Please generete keys.");
+      return;
     }
+    ws.send(JSON.stringify({
+      type: "key",
+      id: id,
+      N: $("#my_n").val(),
+      Pub: $("#my_pub").val(),
+      message: `N: ${$("#my_n").val()}\n\nPub: ${$("#my_pub").val()}`
+    }));
   });
 
   $("#tweet_msg").click(function() {
-    if ($("#sending_msg").val()) {
-      ws.send(JSON.stringify({
-        type: "encrypted",
-        id: id,
-        dst: $("#dst_id").val(),
-        encrypted: $("#sending_msg").val(),
-        message: "@ID" + id + ": " + $("#sending_msg").val(),
-      }))
+    if ($("#sending_msg").val() == "") {
+      alertWithToast("Please encrypt your message first.")
+      return;
     }
+    ws.send(JSON.stringify({
+      type: "encrypted",
+      id: id,
+      dst: $("#dst_id").val(),
+      encrypted: $("#sending_msg").val(),
+      message: "@ID" + id + ": " + $("#sending_msg").val(),
+    }))
   });
 
 
@@ -248,11 +274,28 @@ $(function(){
     $("#my_n").val(n.toString());
     $("#my_pub").val(pub.toString());
     $("#my_prv").val(prv.toString());
-    console.log($("#my_n").val());
   });
 
   $("#encrypt").click(function() {
     let msg = $("#plain_msg").val();
+
+    if (msg == "") {
+      alertWithToast("Please fill in sending message.");
+      return;
+    }
+    if (!msg.match("^[a-zA-Z0-9!-/:-@¥[-`{-~]*$")) {
+      alertWithToast("Only half-width charactors are supported.")
+      return;
+    }
+    if (msg.length > 128) {
+      alertWithToast("Maximum message length is 128.");
+      return;
+    }
+    if ($("#dst_id").val() == "") {
+      alertWithToast("No destination is selected.");
+      return;
+    }
+
     let n = bigInt($("#dst_n").val());
     let pub = bigInt($("#dst_pub").val());
     let encrypted_value = encrypt(msg_to_int(msg), n, pub);
@@ -260,10 +303,19 @@ $(function(){
   });
 
   $("#decrypt").click(function() {
-    let encrypted_msg = bigInt($("#encrypted_msg").val());
+    let encrypted_msg = $("#encrypted_msg").val();
+    if (encrypted_msg == "") {
+      alertWithToast("Please choose encrypted message.");
+      return;
+    }
+
+    if ($("#my_n").val() == "") {
+      alertWithToast("Please generate keys.");
+      return;
+    }
     let n = bigInt($("#my_n").val());
     let prv = bigInt($("#my_prv").val());
-    let decrypted_value = decrypt(encrypted_msg, n, prv);
+    let decrypted_value = decrypt(bigInt(encrypted_msg), n, prv);
     $("#decrypted_msg").val(int_to_msg(decrypted_value));
   });
 
