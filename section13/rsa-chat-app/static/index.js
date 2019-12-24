@@ -1,5 +1,6 @@
 $(function(){
-  const ws = new WebSocket(`wss://${location.host}/ws`);
+  var protocol = (location.protocol == "http:" ? "ws:" : "wss:");
+  const ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
   function alertWithToast(message) {
     let toast = $(`
@@ -122,7 +123,7 @@ $(function(){
       id: id,
       dst: $("#dst_id").val(),
       encrypted: $("#sending_msg").val(),
-      message: "@ID" + id + ": " + $("#sending_msg").val(),
+      message: "@ID" + $("#dst_id").val() + ": " + $("#sending_msg").val(),
     }))
   });
 
