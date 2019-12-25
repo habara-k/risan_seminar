@@ -271,10 +271,16 @@ $(function(){
   }
 
   $("#generate_keys").click(function() {
-    let [n, pub, prv] = generate_keys(SECURE_KEY_SIZE=8*128);
-    $("#my_n").val(n.toString());
-    $("#my_pub").val(pub.toString());
-    $("#my_prv").val(prv.toString());
+    $(this).hide();
+    $("#loading").show();
+    setTimeout(function(){
+      let [n, pub, prv] = generate_keys(SECURE_KEY_SIZE=8*128);
+      $("#my_n").val(n.toString());
+      $("#my_pub").val(pub.toString());
+      $("#my_prv").val(prv.toString());
+      $("#loading").hide();
+      $("#generate_keys").show();
+    },10);
   });
 
   $("#encrypt").click(function() {
