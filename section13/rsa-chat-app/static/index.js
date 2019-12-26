@@ -290,7 +290,7 @@ $(function(){
       alertWithToast("Please fill in sending message.");
       return;
     }
-    if (!msg.match("^[a-zA-Z0-9!-/:-@¥[-`{-~]*$")) {
+    if (!msg.match("^[a-zA-Z0-9!-/:-@¥[-`{-~ \n]*$")) {
       alertWithToast("Only half-width charactors are supported.")
       return;
     }
