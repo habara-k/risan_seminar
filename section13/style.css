@@ -30,7 +30,21 @@ a {
 
 /* https://hiroppy.github.io/fusuma/docs/guides/slide-syntax#declaring-section-title */
 .section-title {
+    color: var(--color-white);
+    background: var(--color-black);
 }
 
 .title {
+    color: var(--color-cyan);
+    background: var(--color-black);
+}
+
+h2 {
+    color: var(--color-cyan);
+    margin-bottom: 30px;
+}
+
+h3 {
+    color: var(--color-cyan);
+    margin-bottom: 10px;
 }

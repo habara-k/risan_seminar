@@ -16,7 +16,7 @@ slide:
     plugins: []
     theme: default
   chart: false
-  math: false
+  math: true
 extends:
   js:
   css: ./style.css
